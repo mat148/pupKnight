@@ -9,8 +9,8 @@
 [ext_resource type="PackedScene" uid="uid://8d820ovc4so4" path="res://globals/managers/operations_manager.tscn" id="3_bvix3"]
 [ext_resource type="Script" path="res://globals/managers/operations_manager.gd" id="4_wbauw"]
 [ext_resource type="PackedScene" uid="uid://4wfnh85qhqvl" path="res://entities/enemies/enemy_1.tscn" id="5_kipgp"]
+[ext_resource type="PackedScene" uid="uid://b0mxtkujmd81r" path="res://levels/door.tscn" id="6_tt2tc"]
 [ext_resource type="PackedScene" uid="uid://cg8q7exavr4qn" path="res://globals/managers/enemy_manager.tscn" id="8_h1x75"]
-[ext_resource type="Script" path="res://globals/managers/enemy_manager.gd" id="9_le0kl"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_3d4gi"]
 texture = ExtResource("3_5qcd3")
@@ -52,16 +52,19 @@ tile = {
 "wall": Vector2i(1, 0)
 }
 enemy_reference = ExtResource("5_kipgp")
-tile_map = NodePath("../../TileMap")
+door_reference = ExtResource("6_tt2tc")
+tile_map = NodePath("../../Enviroment/TileMap")
 player = NodePath("../../player")
 
 [node name="OperationsManager" parent="Managers" instance=ExtResource("3_bvix3")]
 script = ExtResource("4_wbauw")
 
-[node name="EnemyManager" parent="Managers" instance=ExtResource("8_h1x75")]
-script = ExtResource("9_le0kl")
+[node name="EnemyManager" parent="Managers" node_paths=PackedStringArray("player") instance=ExtResource("8_h1x75")]
+player = NodePath("../../player")
 
-[node name="TileMap" type="TileMap" parent="."]
+[node name="Enviroment" type="Node2D" parent="."]
+
+[node name="TileMap" type="TileMap" parent="Enviroment"]
 position = Vector2(-64, -64)
 tile_set = SubResource("TileSet_0qj5v")
 format = 2

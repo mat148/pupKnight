@@ -6,19 +6,16 @@ const max_room_size = 8
 
 @export var tile: Dictionary = {}
 @export var enemy_reference: PackedScene
+@export var door_reference: PackedScene
 
 var level_num = 0
 var map = []
 var rooms = []
 var level_size = Vector2(60, 60)
 
-## TODO Move to groups
-#var enemies = []
-
 @export var tile_map: TileMap
-@export var player: Area2D
+@export var player: Node2D
 
-#var player_tile
 var score = 0
 
 func _ready():
@@ -67,7 +64,7 @@ func build_level():
 	var start_room = rooms.front()
 	var player_x = start_room.position.x + 1 + randi() % int(start_room.size.x - 2)
 	var player_y = start_room.position.y + 1 + randi() % int(start_room.size.y - 2)
-	player.position = Vector2(player_x, player_y) * tile_size
+	player.set_position(Vector2(player_x, player_y) * tile_size)
 	
 	# Place enemies
 	var num_enemies = 50
@@ -156,8 +153,16 @@ func add_random_connection(stone_graph, room_graph):
 	
 	path = Array(path)
 	
-	set_tile(start_position.x, start_position.y, tile.door)
-	set_tile(end_position.x, end_position.y, tile.door)
+	set_tile(start_position.x, start_position.y, tile.ground)
+	set_tile(end_position.x, end_position.y, tile.ground)
+	
+	var door1 = door_reference.instantiate()
+	door1.position = Vector2(start_position.x, start_position.y) * tile_size
+	get_node("/root/Main/Enviroment").add_child(door1)
+	
+	var door2 = door_reference.instantiate()
+	door2.position = Vector2(end_position.x, end_position.y) * tile_size
+	get_node("/root/Main/Enviroment").add_child(door2)
 	
 	for path_position in path:
 		set_tile(path_position.x, path_position.y, tile.ground)

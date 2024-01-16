@@ -1,14 +1,14 @@
 [gd_scene load_steps=3 format=3 uid="uid://4wfnh85qhqvl"]
 
+[ext_resource type="Script" path="res://entities/enemies/enemy.gd" id="1_hxu7j"]
 [ext_resource type="Texture2D" uid="uid://7g72kxsypky3" path="res://enemy.svg" id="1_kckj5"]
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_35cr4"]
-radius = 64.0
-
-[node name="Enemy1" type="Area2D"]
+[node name="Enemy1" type="Node2D"]
+script = ExtResource("1_hxu7j")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = ExtResource("1_kckj5")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("CircleShape2D_35cr4")
+[node name="RayCast2D" type="RayCast2D" parent="."]
+
+[node name="Timer" type="Timer" parent="."]
