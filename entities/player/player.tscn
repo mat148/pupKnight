@@ -4,21 +4,18 @@
 [ext_resource type="Script" path="res://entities/player/player.gd" id="1_s7ngj"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_al3lo"]
-size = Vector2(40, 77)
+size = Vector2(128, 128)
 
-[node name="player" type="CharacterBody2D"]
+[node name="player" type="Area2D"]
 script = ExtResource("1_s7ngj")
 
 [node name="player_sprite" type="Sprite2D" parent="."]
-position = Vector2(0, -53)
 texture = ExtResource("1_3two6")
 
 [node name="player_collision" type="CollisionShape2D" parent="."]
-position = Vector2(0, -39)
 shape = SubResource("RectangleShape2D_al3lo")
 
-[node name="player_move_pause" type="Timer" parent="."]
-wait_time = 0.3
-one_shot = true
+[node name="player_camera" type="Camera2D" parent="."]
 
-[connection signal="timeout" from="player_move_pause" to="." method="_on_player_move_pause_timeout"]
+[node name="player_move_ray" type="RayCast2D" parent="."]
+target_position = Vector2(0, 0)

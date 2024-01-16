@@ -1,33 +1,33 @@
-extends CharacterBody2D
+extends Area2D
 
-const acceleration = 4.0
-var player_movement_timeout = false
-var new_position = Vector2()
+@onready var ray = $player_move_ray
 
-func _process(delta):
-	if !player_movement_timeout && Input.is_action_just_pressed("left"):
-		player_movement_timeout = true
-		new_position = Vector2(position.x - 128, position.y)
-		$player_move_pause.start()
-	
-	if !player_movement_timeout && Input.is_action_just_pressed("right"):
-		player_movement_timeout = true
-		new_position = Vector2(position.x + 128, position.y)
-		$player_move_pause.start()
-	
-	if !player_movement_timeout && Input.is_action_just_pressed("up"):
-		player_movement_timeout = true
-		new_position = Vector2(position.x, position.y - 128)
-		$player_move_pause.start()
-	
-	if !player_movement_timeout && Input.is_action_just_pressed("down"):
-		player_movement_timeout = true
-		new_position = Vector2(position.x, position.y + 128)
-		$player_move_pause.start()
-	
-	if player_movement_timeout:
-		position = lerp(position, new_position, acceleration * delta)
+var animation_speed = 3
+var moving = false
+var tile_size = 128
+var inputs = {
+	"right": Vector2.RIGHT,
+	"left": Vector2.LEFT,
+	"up": Vector2.UP,
+	"down": Vector2.DOWN
+}
 
-func _on_player_move_pause_timeout():
-	print("timer done")
-	player_movement_timeout = false
+func _ready():
+	position = position.snapped(Vector2.ONE * tile_size)
+
+func _unhandled_input(event):
+	if moving: return
+	for dir in inputs.keys():
+		if event.is_action_pressed(dir, false, true):
+			move(dir)
+
+func move(dir):
+	ray.target_position = inputs[dir] * tile_size
+	ray.force_raycast_update()
+	
+	if !ray.is_colliding():
+		var tween = get_tree().create_tween()
+		tween.tween_property(self, "position", position + inputs[dir] * tile_size, 1.0/animation_speed).set_trans(Tween.TRANS_SINE)
+		moving = true
+		await tween.finished
+		moving = false
