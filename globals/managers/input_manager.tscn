@@ -1,0 +1,3 @@
+[gd_scene format=3 uid="uid://dg0uak4xxtrvr"]
+
+[node name="InputManager" type="Node2D"]

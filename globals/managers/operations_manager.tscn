@@ -1,0 +1,3 @@
+[gd_scene format=3 uid="uid://8d820ovc4so4"]
+
+[node name="OperationsManager" type="Node2D"]

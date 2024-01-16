@@ -5,21 +5,43 @@ const min_room_size = 5
 const max_room_size = 8
 
 @export var tile: Dictionary = {}
+@export var enemy_reference: PackedScene
 
 var level_num = 0
 var map = []
 var rooms = []
 var level_size = Vector2(60, 60)
 
+## TODO Move to groups
+#var enemies = []
+
 @export var tile_map: TileMap
 @export var player: Area2D
 
-var player_tile
+#var player_tile
 var score = 0
 
 func _ready():
+	#SignalManager.player_check_tile.connect(check_tile)
+	
 	randomize()
 	build_level()
+
+func check_tile(dir):
+	print('check tile: ', dir)
+	var x = player.position.x + dir.x
+	var y = player.position.y + dir.y
+	
+	var tile_type = tile.stone
+	if x >= 0 && x < level_size.x && y >= 0 && y < level_size.y:
+		tile_type = map[x][y]
+	
+	match tile_type:
+		tile.door:
+			set_tile(x, y, tile.floor)
+		
+		#tile.ladder:
+			#pass
 
 func build_level():
 	rooms.clear()
@@ -40,6 +62,39 @@ func build_level():
 			break
 	
 	connect_rooms()
+	
+	# Place player
+	var start_room = rooms.front()
+	var player_x = start_room.position.x + 1 + randi() % int(start_room.size.x - 2)
+	var player_y = start_room.position.y + 1 + randi() % int(start_room.size.y - 2)
+	player.position = Vector2(player_x, player_y) * tile_size
+	
+	# Place enemies
+	var num_enemies = 50
+	for i in range(num_enemies):
+		var room = rooms[1 + randi() % (rooms.size() - 1)]
+		var x = room.position.x + 1 + randi() % int(room.size.x - 2)
+		var y = room.position.y + 1 + randi() % int(room.size.y - 2)
+		
+		var blocked = false
+		for enemy in get_tree().get_nodes_in_group("enemies"):
+			if enemy.position.x == x && enemy.position.y == y:
+				blocked = true
+				break
+			
+		if !blocked:
+			var enemy = enemy_reference.instantiate()
+			enemy.position = Vector2(x, y) * tile_size
+			enemy.add_to_group("enemies")
+			get_node("/root/Main/enemy_container").add_child(enemy)
+			#var enemy = Enemy.new(self, randi() % 2, x, y)
+			#enemies.append(enemy)
+	
+	#call_deferred("update_visuals")
+
+func update_visuals():
+	#player.position = player_tile * tile_size
+	pass
 
 func connect_rooms():
 	var stone_graph = AStar2D.new()
@@ -101,11 +156,11 @@ func add_random_connection(stone_graph, room_graph):
 	
 	path = Array(path)
 	
-	set_tile(start_position.x, start_position.y, tile.placeholder)
-	set_tile(end_position.x, end_position.y, tile.placeholder)
+	set_tile(start_position.x, start_position.y, tile.door)
+	set_tile(end_position.x, end_position.y, tile.door)
 	
-	for position in path:
-		set_tile(position.x, position.y, tile.ground)
+	for path_position in path:
+		set_tile(path_position.x, path_position.y, tile.ground)
 	
 	room_graph.connect_points(start_room_id, end_room_id)
 

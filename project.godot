@@ -15,6 +15,11 @@ run/main_scene="res://levels/main.tscn"
 config/features=PackedStringArray("4.2", "Forward Plus")
 config/icon="res://icon.svg"
 
+[autoload]
+
+GameManager="*res://globals/managers/game_manager.gd"
+SignalManager="*res://globals/managers/signal_manager.gd"
+
 [input]
 
 up={
