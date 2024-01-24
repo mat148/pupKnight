@@ -10,17 +10,20 @@ const max_room_size = 8
 
 var level_num = 0
 var map = []
-var rooms = []
+var rooms: Array[Room] = []
+@export var room_reference: PackedScene
+var room_id = 0
 var level_size = Vector2(60, 60)
 
 @export var tile_map: TileMap
-@export var player: Node2D
+@export var player: CharacterBody2D
 
 var score = 0
 
 func _ready():
-	#SignalManager.player_check_tile.connect(check_tile)
-	
+	SignalManager.generate_map.connect(run_generation)
+
+func run_generation():
 	randomize()
 	build_level()
 
@@ -61,17 +64,21 @@ func build_level():
 	connect_rooms()
 	
 	# Place player
+	player.visible = true
 	var start_room = rooms.front()
-	var player_x = start_room.position.x + 1 + randi() % int(start_room.size.x - 2)
-	var player_y = start_room.position.y + 1 + randi() % int(start_room.size.y - 2)
+	var player_x = start_room.room_rect.position.x + 1 + randi() % int(start_room.room_rect.size.x - 2)
+	var player_y = start_room.room_rect.position.y + 1 + randi() % int(start_room.room_rect.size.y - 2)
 	player.set_position(Vector2(player_x, player_y) * tile_size)
+	start_room.room_explored = true
+	player.current_room = start_room
+	start_room.fog.queue_free()
 	
 	# Place enemies
 	var num_enemies = 50
 	for i in range(num_enemies):
 		var room = rooms[1 + randi() % (rooms.size() - 1)]
-		var x = room.position.x + 1 + randi() % int(room.size.x - 2)
-		var y = room.position.y + 1 + randi() % int(room.size.y - 2)
+		var x = room.room_rect.position.x + 1 + randi() % int(room.room_rect.size.x - 2)
+		var y = room.room_rect.position.y + 1 + randi() % int(room.room_rect.size.y - 2)
 		
 		var blocked = false
 		for enemy in get_tree().get_nodes_in_group("enemies"):
@@ -82,16 +89,11 @@ func build_level():
 		if !blocked:
 			var enemy = enemy_reference.instantiate()
 			enemy.position = Vector2(x, y) * tile_size
-			enemy.add_to_group("enemies")
-			get_node("/root/Main/enemy_container").add_child(enemy)
-			#var enemy = Enemy.new(self, randi() % 2, x, y)
-			#enemies.append(enemy)
+			enemy.current_room = room
+			get_node("/root/Main/Enviroment/enemy_container").add_child(enemy)
+			enemy.current_room = room
 	
-	#call_deferred("update_visuals")
-
-func update_visuals():
-	#player.position = player_tile * tile_size
-	pass
+	SignalManager.done_generating.emit()
 
 func connect_rooms():
 	var stone_graph = AStar2D.new()
@@ -114,7 +116,7 @@ func connect_rooms():
 	var room_graph = AStar2D.new()
 	point_id = 0
 	for room in rooms:
-		var room_center = room.position + room.size / 2
+		var room_center = room.room_rect.position + room.room_rect.size / 2
 		room_graph.add_point(point_id, Vector2(room_center.x, room_center.y))
 		point_id += 1
 	
@@ -158,11 +160,11 @@ func add_random_connection(stone_graph, room_graph):
 	
 	var door1 = door_reference.instantiate()
 	door1.position = Vector2(start_position.x, start_position.y) * tile_size
-	get_node("/root/Main/Enviroment").add_child(door1)
+	get_node("/root/Main/Enviroment/DoorNodes").add_child(door1)
 	
 	var door2 = door_reference.instantiate()
 	door2.position = Vector2(end_position.x, end_position.y) * tile_size
-	get_node("/root/Main/Enviroment").add_child(door2)
+	get_node("/root/Main/Enviroment/DoorNodes").add_child(door2)
 	
 	for path_position in path:
 		set_tile(path_position.x, path_position.y, tile.ground)
@@ -214,15 +216,15 @@ func pick_random_door_location(room):
 	
 	# Top and bottom walls
 	
-	for x in range(room.position.x + 1, room.end.x - 2):
-		options.append(Vector2(x, room.position.y))
-		options.append(Vector2(x, room.end.y - 1))
+	for x in range(room.room_rect.position.x + 1, room.room_rect.end.x - 2):
+		options.append(Vector2(x, room.room_rect.position.y))
+		options.append(Vector2(x, room.room_rect.end.y - 1))
 			
 	# Left and right walls
 	
-	for y in range(room.position.y + 1, room.end.y - 2):
-		options.append(Vector2(room.position.x, y))
-		options.append(Vector2(room.end.x - 1, y))
+	for y in range(room.room_rect.position.y + 1, room.room_rect.end.y - 2):
+		options.append(Vector2(room.room_rect.position.x, y))
+		options.append(Vector2(room.room_rect.end.x - 1, y))
 			
 	return options[randi() % options.size()]
 
@@ -249,7 +251,28 @@ func add_room(free_regions):
 	if region.size.y > size_y:
 		start_y += randi() % int(region.size.y - size_y)
 	
-	var room = Rect2(start_x, start_y, size_x, size_y)
+	var room: Room = room_reference.instantiate()
+	room.room_rect = Rect2(start_x, start_y, size_x, size_y)
+	room.room_explored = false
+	room.room_index = room_id
+	room_id += 1
+	
+	room.position = Vector2(start_x, start_y) * tile_size
+	var polygonArray: Array[Vector2] = [
+		Vector2(128, 128),
+		Vector2(size_x * tile_size - 128, 128),
+		Vector2(size_x * tile_size - 128, size_y * tile_size - 128),
+		Vector2(128, size_y * tile_size - 128)
+	]
+	room.collisionPolygon2D.set_polygon(polygonArray)
+	room.collisionPolygon2D.position = Vector2(-64, -64)
+	room.fog.set_polygon(polygonArray)
+	room.fog.position = Vector2(-64, -64)
+	
+	player.get_node("player_move_ray").add_exception(room.area2D)
+	
+	get_node("/root/Main/Enviroment/RoomNodes").add_child(room)
+	
 	rooms.append(room)
 	
 	for x in range(start_x, start_x + size_x):
@@ -268,6 +291,7 @@ func add_room(free_regions):
 func cut_regions(free_regions, region_to_remove):
 	var removal_queue = []
 	var addition_queue = []
+	region_to_remove = region_to_remove.room_rect
 	
 	for region in free_regions:
 		if region.intersects(region_to_remove):

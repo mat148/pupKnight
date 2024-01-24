@@ -1,14 +1,21 @@
-[gd_scene load_steps=3 format=3 uid="uid://4wfnh85qhqvl"]
+[gd_scene load_steps=4 format=3 uid="uid://4wfnh85qhqvl"]
 
 [ext_resource type="Script" path="res://entities/enemies/enemy.gd" id="1_hxu7j"]
 [ext_resource type="Texture2D" uid="uid://7g72kxsypky3" path="res://enemy.svg" id="1_kckj5"]
 
-[node name="Enemy1" type="Node2D"]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_rwma1"]
+size = Vector2(128, 128)
+
+[node name="Enemy1" type="CharacterBody2D" node_paths=PackedStringArray("ray") groups=["enemies", "entity"]]
 script = ExtResource("1_hxu7j")
+ray = NodePath("RayCast2D")
+health = 2
+damage = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_rwma1")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = ExtResource("1_kckj5")
 
 [node name="RayCast2D" type="RayCast2D" parent="."]
-
-[node name="Timer" type="Timer" parent="."]

@@ -1,16 +1,69 @@
-[gd_scene load_steps=14 format=3 uid="uid://bokq33hjixl1b"]
+[gd_scene load_steps=29 format=3 uid="uid://bokq33hjixl1b"]
 
+[ext_resource type="Script" path="res://globals/managers/state_manager.gd" id="1_i5kh1"]
 [ext_resource type="PackedScene" uid="uid://cye6w7l86p7xv" path="res://globals/managers/generation_manager.tscn" id="1_kndpq"]
+[ext_resource type="PackedScene" uid="uid://db7fw08xt1a0x" path="res://gui/start_menu.tscn" id="1_mbe8f"]
 [ext_resource type="PackedScene" uid="uid://djbsiantohdvh" path="res://entities/player/player.tscn" id="1_qke6n"]
 [ext_resource type="PackedScene" uid="uid://dg0uak4xxtrvr" path="res://globals/managers/input_manager.tscn" id="1_y18lt"]
+[ext_resource type="Script" path="res://globals/states/gameOverState.gd" id="2_2mvns"]
 [ext_resource type="Script" path="res://globals/managers/generation_manager.gd" id="2_kudiu"]
+[ext_resource type="Script" path="res://gui/Gameover.gd" id="2_l2bwb"]
+[ext_resource type="Script" path="res://globals/states/startMenuState.gd" id="2_uk6ir"]
 [ext_resource type="Script" path="res://globals/managers/input_manager.gd" id="2_vvejm"]
+[ext_resource type="Script" path="res://globals/managers/GameManager.gd" id="2_xvqqc"]
 [ext_resource type="Texture2D" uid="uid://d1n53kw8ljblj" path="res://tilemap.png" id="3_5qcd3"]
+[ext_resource type="Script" path="res://globals/states/gameRunningState.gd" id="3_47oup"]
 [ext_resource type="PackedScene" uid="uid://8d820ovc4so4" path="res://globals/managers/operations_manager.tscn" id="3_bvix3"]
 [ext_resource type="Script" path="res://globals/managers/operations_manager.gd" id="4_wbauw"]
+[ext_resource type="Script" path="res://globals/states/pauseMenuState.gd" id="4_wf3mq"]
 [ext_resource type="PackedScene" uid="uid://4wfnh85qhqvl" path="res://entities/enemies/enemy_1.tscn" id="5_kipgp"]
+[ext_resource type="Script" path="res://globals/states/setupGameState.gd" id="6_qmy7b"]
 [ext_resource type="PackedScene" uid="uid://b0mxtkujmd81r" path="res://levels/door.tscn" id="6_tt2tc"]
-[ext_resource type="PackedScene" uid="uid://cg8q7exavr4qn" path="res://globals/managers/enemy_manager.tscn" id="8_h1x75"]
+[ext_resource type="Script" path="res://globals/states/generateWorldState.gd" id="7_a311a"]
+[ext_resource type="PackedScene" uid="uid://bkruvc0dej3im" path="res://levels/room.tscn" id="7_ievkj"]
+[ext_resource type="Script" path="res://globals/managers/GUIManager.gd" id="17_tetxg"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4y3l8"]
+bg_color = Color(0, 0, 0, 1)
+
+[sub_resource type="Animation" id="Animation_bfena"]
+resource_name = "fade_in"
+length = 0.8
+step = 0.3
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.8),
+"transitions": PackedFloat32Array(3.73213, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 1), Color(1, 1, 1, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_x830m"]
+resource_name = "fade_out"
+length = 0.8
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.8),
+"transitions": PackedFloat32Array(0.406126, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_tihtf"]
+_data = {
+"fade_in": SubResource("Animation_bfena"),
+"fade_out": SubResource("Animation_x830m")
+}
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_3d4gi"]
 texture = ExtResource("3_5qcd3")
@@ -35,9 +88,133 @@ tile_size = Vector2i(128, 128)
 physics_layer_0/collision_layer = 1
 sources/0 = SubResource("TileSetAtlasSource_3d4gi")
 
-[node name="Main" type="Node2D"]
+[node name="Main" type="Node"]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="StartMenu" parent="CanvasLayer" instance=ExtResource("1_mbe8f")]
+
+[node name="PauseMenu" type="Control" parent="CanvasLayer"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CenterContainer" type="CenterContainer" parent="CanvasLayer/PauseMenu"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="CanvasLayer/PauseMenu/CenterContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 128
+text = "Paused"
+
+[node name="Gameover" type="Control" parent="CanvasLayer"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2_l2bwb")
+
+[node name="CenterContainer" type="CenterContainer" parent="CanvasLayer/Gameover"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Gameover/CenterContainer"]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="Label" type="Label" parent="CanvasLayer/Gameover/CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 32
+theme_override_font_sizes/font_size = 128
+text = "Game over"
+
+[node name="Control" type="Control" parent="CanvasLayer/Gameover/CenterContainer/VBoxContainer"]
+custom_minimum_size = Vector2(300, 2.08165e-12)
+layout_mode = 2
+
+[node name="Button" type="Button" parent="CanvasLayer/Gameover/CenterContainer/VBoxContainer/Control"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 32
+text = "Restart?"
+
+[node name="Transition" type="Control" parent="CanvasLayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="Panel" parent="CanvasLayer/Transition"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_4y3l8")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="CanvasLayer/Transition"]
+libraries = {
+"": SubResource("AnimationLibrary_tihtf")
+}
+autoplay = "fade_in"
 
 [node name="Managers" type="Node2D" parent="."]
+
+[node name="GameManager" type="Node2D" parent="Managers" node_paths=PackedStringArray("state_manager", "input_manager", "generation_manager", "operations_manager")]
+script = ExtResource("2_xvqqc")
+state_manager = NodePath("../StateManager")
+input_manager = NodePath("../InputManager")
+generation_manager = NodePath("../GenerationManager")
+operations_manager = NodePath("../OperationsManager")
+
+[node name="StateManager" type="Node2D" parent="Managers" node_paths=PackedStringArray("inital_state")]
+script = ExtResource("1_i5kh1")
+inital_state = NodePath("StartMenuState")
+
+[node name="SetupGameState" type="Node" parent="Managers/StateManager"]
+script = ExtResource("6_qmy7b")
+
+[node name="StartMenuState" type="Node" parent="Managers/StateManager"]
+script = ExtResource("2_uk6ir")
+
+[node name="GenerateWorldState" type="Node" parent="Managers/StateManager"]
+script = ExtResource("7_a311a")
+
+[node name="GameRunningState" type="Node" parent="Managers/StateManager"]
+script = ExtResource("3_47oup")
+
+[node name="PauseMenuState" type="Node" parent="Managers/StateManager"]
+script = ExtResource("4_wf3mq")
+
+[node name="GameOverState" type="Node" parent="Managers/StateManager"]
+script = ExtResource("2_2mvns")
 
 [node name="InputManager" parent="Managers" instance=ExtResource("1_y18lt")]
 script = ExtResource("2_vvejm")
@@ -53,14 +230,21 @@ tile = {
 }
 enemy_reference = ExtResource("5_kipgp")
 door_reference = ExtResource("6_tt2tc")
+room_reference = ExtResource("7_ievkj")
 tile_map = NodePath("../../Enviroment/TileMap")
-player = NodePath("../../player")
+player = NodePath("../../Enviroment/player")
 
-[node name="OperationsManager" parent="Managers" instance=ExtResource("3_bvix3")]
+[node name="OperationsManager" parent="Managers" node_paths=PackedStringArray("player") instance=ExtResource("3_bvix3")]
 script = ExtResource("4_wbauw")
+player = NodePath("../../Enviroment/player")
 
-[node name="EnemyManager" parent="Managers" node_paths=PackedStringArray("player") instance=ExtResource("8_h1x75")]
-player = NodePath("../../player")
+[node name="GUIManager" type="Node2D" parent="Managers" node_paths=PackedStringArray("start_menu", "transition", "pause_menu", "gameover")]
+visible = false
+script = ExtResource("17_tetxg")
+start_menu = NodePath("../../CanvasLayer/StartMenu")
+transition = NodePath("../../CanvasLayer/Transition")
+pause_menu = NodePath("../../CanvasLayer/PauseMenu")
+gameover = NodePath("../../CanvasLayer/Gameover")
 
 [node name="Enviroment" type="Node2D" parent="."]
 
@@ -69,7 +253,15 @@ position = Vector2(-64, -64)
 tile_set = SubResource("TileSet_0qj5v")
 format = 2
 
-[node name="player" parent="." instance=ExtResource("1_qke6n")]
+[node name="player" parent="Enviroment" instance=ExtResource("1_qke6n")]
+visible = false
 
-[node name="enemy_container" type="Node2D" parent="."]
+[node name="enemy_container" type="Node2D" parent="Enviroment"]
 unique_name_in_owner = true
+
+[node name="DoorNodes" type="Node2D" parent="Enviroment"]
+
+[node name="RoomNodes" type="Node2D" parent="Enviroment"]
+unique_name_in_owner = true
+
+[connection signal="pressed" from="CanvasLayer/Gameover/CenterContainer/VBoxContainer/Control/Button" to="CanvasLayer/Gameover" method="_on_button_pressed"]

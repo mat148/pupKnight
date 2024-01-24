@@ -1,13 +1,27 @@
-[gd_scene load_steps=4 format=3 uid="uid://djbsiantohdvh"]
+[gd_scene load_steps=5 format=3 uid="uid://djbsiantohdvh"]
 
 [ext_resource type="Texture2D" uid="uid://ca5iqdnad2s8a" path="res://pupKnight.png" id="1_3two6"]
 [ext_resource type="Script" path="res://entities/player/player.gd" id="1_s7ngj"]
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_vl5h0"]
+size = Vector2(128, 128)
+
 [sub_resource type="CircleShape2D" id="CircleShape2D_cg87e"]
 radius = 1000.0
 
-[node name="player" type="Node2D"]
+[node name="player" type="CharacterBody2D" node_paths=PackedStringArray("ray") groups=["entity"]]
 script = ExtResource("1_s7ngj")
+ray = NodePath("player_move_ray")
+health = 3
+damage = 1
+
+[node name="player_collisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_vl5h0")
+
+[node name="player_area2D" type="Area2D" parent="."]
+
+[node name="player_detect_enemies_collision" type="CollisionShape2D" parent="player_area2D"]
+shape = SubResource("CircleShape2D_cg87e")
 
 [node name="player_sprite" type="Sprite2D" parent="."]
 texture = ExtResource("1_3two6")
@@ -15,10 +29,6 @@ texture = ExtResource("1_3two6")
 [node name="player_camera" type="Camera2D" parent="."]
 
 [node name="player_move_ray" type="RayCast2D" parent="."]
+unique_name_in_owner = true
 target_position = Vector2(0, 0)
 collide_with_areas = true
-
-[node name="player_detect_enemies_area" type="Area2D" parent="."]
-
-[node name="player_detect_enemies_collision" type="CollisionShape2D" parent="player_detect_enemies_area"]
-shape = SubResource("CircleShape2D_cg87e")

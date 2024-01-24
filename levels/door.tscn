@@ -11,6 +11,7 @@ size = Vector2(128, 128)
 
 [node name="CollisionPolygon2D" type="CollisionShape2D" parent="Area2D"]
 shape = SubResource("RectangleShape2D_qh7yk")
+disabled = true
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = ExtResource("1_ejfcl")
